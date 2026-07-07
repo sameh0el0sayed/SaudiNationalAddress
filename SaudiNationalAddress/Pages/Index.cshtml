@@ -1,0 +1,151 @@
+﻿@page
+@model IndexModel
+
+@{
+    ViewData["Title"] = "Saudi National Address";
+}
+
+<div class="container">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-10">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-success text-white">
+
+                    <h4 class="mb-0">
+                        Saudi National Address Search
+                    </h4>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="input-group mb-3">
+
+                        <input id="txtAddress"
+                               class="form-control form-control-lg"
+                               placeholder="Enter National Address..." />
+
+                        <button class="btn btn-success"
+                                onclick="searchAddress()">
+
+                            Search
+
+                        </button>
+
+                    </div>
+
+                    <div id="map"
+                         style="height:600px;border-radius:10px;"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script>
+
+        let map;
+        let marker;
+
+        function initMap(){
+
+            map = new google.maps.Map(document.getElementById("map"),{
+
+                zoom:15,
+
+                center:{
+                    lat:24.7136,
+                    lng:46.6753
+                }
+
+            });
+
+        }
+
+        window.onload = function(){
+
+            initMap();
+
+        }
+
+        async function searchAddress(){
+
+            const address = document.getElementById("txtAddress").value;
+
+            if(address.trim()===""){
+
+                alert("Please enter an address.");
+
+                return;
+
+            }
+
+            const response = await fetch("/api/NationalAddress?address="
+                + encodeURIComponent(address));
+
+            if(!response.ok){
+
+                alert("Address not found.");
+
+                return;
+
+            }
+
+            const data = await response.json();
+
+          
+
+            let lat = data.latitude;
+            let lng = data.longitude;
+
+         
+            if(data.Addresses){
+
+                lat = parseFloat(data.Addresses[0].Latitude);
+                lng = parseFloat(data.Addresses[0].Longitude);
+
+            }
+
+            const location = {
+
+                lat:lat,
+                lng:lng
+
+            };
+
+            map.setCenter(location);
+
+            map.setZoom(18);
+
+            if(marker){
+
+                marker.setMap(null);
+
+            }
+
+            marker = new google.maps.Marker({
+
+                position:location,
+
+                map:map,
+
+                animation:google.maps.Animation.DROP
+
+            });
+
+        }
+
+    </script>
+
+}
